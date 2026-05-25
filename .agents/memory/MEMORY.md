@@ -1,0 +1,1 @@
+- [Tailwind v3 vs v4 in pup-club](tailwind-version-pup-club.md) — pup-club pins tailwindcss@3 locally; workspace catalog is v4; using postcss.config.js approach.
