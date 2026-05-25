@@ -3,13 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Pup Club API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: patrons
+    description: Patron management
+  - name: games
+    description: Game management
+  - name: scores
+    description: Score submission and leaderboard
+  - name: menu
+    description: Menu items
+  - name: events
+    description: Venue events
 paths:
   /healthz:
     get:
@@ -24,6 +34,166 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /patrons/me:
+    get:
+      operationId: getPatron
+      tags: [patrons]
+      summary: Get or create patron by session token
+      parameters:
+        - name: session_token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Patron found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patron"
+        "404":
+          description: Not found
+
+  /patrons:
+    post:
+      operationId: createPatron
+      tags: [patrons]
+      summary: Create a new patron
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatronInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patron"
+
+  /games:
+    get:
+      operationId: getGames
+      tags: [games]
+      summary: Get all active games for the venue
+      responses:
+        "200":
+          description: List of games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+
+  /scores:
+    post:
+      operationId: submitScore
+      tags: [scores]
+      summary: Submit a game score
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScoreInput"
+      responses:
+        "201":
+          description: Score submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Score"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [scores]
+      summary: Get today's leaderboard
+      parameters:
+        - name: game_slug
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /leaderboard/alltime:
+    get:
+      operationId: getLeaderboardAlltime
+      tags: [scores]
+      summary: Get all-time leaderboard
+      parameters:
+        - name: game_slug
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All-time leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /menu:
+    get:
+      operationId: getMenu
+      tags: [menu]
+      summary: Get menu items grouped by category
+      responses:
+        "200":
+          description: Menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuItem"
+
+  /events:
+    get:
+      operationId: getEvents
+      tags: [events]
+      summary: Get upcoming events
+      responses:
+        "200":
+          description: Upcoming events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+  /venue:
+    get:
+      operationId: getVenue
+      tags: [health]
+      summary: Get venue info
+      responses:
+        "200":
+          description: Venue info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Venue"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +204,183 @@ components:
       required:
         - status
 
+    Venue:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        location:
+          type: ["string", "null"]
+        timezone:
+          type: string
+      required: [id, name, slug, timezone]
+
+    Patron:
+      type: object
+      properties:
+        id:
+          type: string
+        venue_id:
+          type: string
+        display_name:
+          type: string
+        email:
+          type: ["string", "null"]
+        session_token:
+          type: string
+        total_xp:
+          type: integer
+        loyalty_tier:
+          type: string
+        created_at:
+          type: string
+        last_seen_at:
+          type: string
+      required: [id, venue_id, display_name, session_token, total_xp, loyalty_tier]
+
+    PatronInput:
+      type: object
+      properties:
+        venue_id:
+          type: string
+        display_name:
+          type: string
+        email:
+          type: ["string", "null"]
+        session_token:
+          type: string
+      required: [venue_id, display_name, session_token]
+
+    Game:
+      type: object
+      properties:
+        id:
+          type: string
+        venue_id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: ["string", "null"]
+        max_duration:
+          type: integer
+        is_active:
+          type: boolean
+        sort_order:
+          type: integer
+      required: [id, venue_id, name, slug, max_duration, is_active, sort_order]
+
+    ScoreInput:
+      type: object
+      properties:
+        game_id:
+          type: string
+        patron_id:
+          type: string
+        venue_id:
+          type: string
+        score:
+          type: integer
+        duration_secs:
+          type: ["integer", "null"]
+      required: [game_id, patron_id, venue_id, score]
+
+    Score:
+      type: object
+      properties:
+        id:
+          type: string
+        game_id:
+          type: string
+        patron_id:
+          type: string
+        venue_id:
+          type: string
+        score:
+          type: integer
+        duration_secs:
+          type: ["integer", "null"]
+        session_date:
+          type: string
+        created_at:
+          type: string
+      required: [id, game_id, patron_id, venue_id, score, session_date]
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        game_id:
+          type: string
+        game_name:
+          type: string
+        game_slug:
+          type: string
+        display_name:
+          type: string
+        loyalty_tier:
+          type: string
+        best_score:
+          type: integer
+        plays:
+          type: integer
+        rank:
+          type: integer
+      required: [game_id, game_name, game_slug, display_name, loyalty_tier, best_score, plays, rank]
+
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: string
+        venue_id:
+          type: string
+        category:
+          type: string
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        price:
+          type: ["number", "null"]
+        is_available:
+          type: boolean
+        is_featured:
+          type: boolean
+        is_special:
+          type: boolean
+        sort_order:
+          type: integer
+      required: [id, venue_id, category, name, is_available, is_featured, is_special, sort_order]
+
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        venue_id:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        performer:
+          type: ["string", "null"]
+        event_date:
+          type: string
+        start_time:
+          type: ["string", "null"]
+        ticket_url:
+          type: ["string", "null"]
+        ticket_price:
+          type: ["number", "null"]
+        is_featured:
+          type: boolean
+        is_active:
+          type: boolean
+      required: [id, venue_id, title, event_date, is_featured, is_active]

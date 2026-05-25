@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Pup Club"
+version = "1.0.0"
+id = "artifacts/pup-club"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24886
+
+[services.development]
+run = "pnpm --filter @workspace/pup-club run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/pup-club", "run", "build" ]
+publicDir = "artifacts/pup-club/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24886"
+BASE_PATH = "/"
