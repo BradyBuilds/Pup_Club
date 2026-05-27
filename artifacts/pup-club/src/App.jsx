@@ -12,12 +12,16 @@ import Leaderboard     from './pages/Leaderboard'
 import Menu            from './pages/Menu'
 import { Events, Profile } from './pages/EventsAndProfile'
 
+import StackWarsLobby  from './games/StackWarsLobby'
+import StackWarsDemo   from './games/StackWarsGame'
+
 export default function App() {
   const {
     venue, setVenue,
     setGames, setLeaderboard,
     hasOnboarded,
     activeTab, setActiveTab,
+    activeGame, clearActiveGame,
     pendingRewards,
   } = useStore()
 
@@ -79,6 +83,39 @@ export default function App() {
       </div>
     </div>
   )
+
+  // ── Full-screen game overlay ──────────────────────────────────────────────
+  if (activeGame) {
+    const isStackWars = activeGame.slug === 'stack-wars'
+    return (
+      <div className="flex flex-col h-full bg-bg overflow-hidden">
+        {/* Back bar */}
+        <div
+          className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
+          style={{ borderBottom: '1px solid #3A3220', background: '#1A1712' }}
+        >
+          <button
+            onClick={clearActiveGame}
+            className="font-display text-sm tracking-wider btn-press"
+            style={{ color: '#C9922A' }}
+          >
+            ← HUB
+          </button>
+          <span className="font-display text-base tracking-wide" style={{ color: '#F5E0C0' }}>
+            {activeGame.name}
+          </span>
+        </div>
+
+        {/* Game content */}
+        <div className="flex-1 overflow-y-auto">
+          {isStackWars
+            ? <StackWarsLobby onExit={clearActiveGame} />
+            : <StackWarsDemo />
+          }
+        </div>
+      </div>
+    )
+  }
 
   const PAGES = { hub: Hub, leaderboard: Leaderboard, menu: Menu, events: Events, profile: Profile }
   const ActivePage = PAGES[activeTab] || Hub

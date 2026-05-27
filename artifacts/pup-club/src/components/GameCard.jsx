@@ -2,38 +2,51 @@ import { useStore } from '../store/useStore'
 
 const GAME_META = {
   pong: {
-    emoji:      '🏓',
+    emoji:       '🏓',
     accentColor: '#F0C040',
     dimColor:    '#F0C04022',
     label:       'Classic paddle battle',
     tagBg:       'linear-gradient(135deg, #F0C040, #C9922A)',
+    live:        false,
+  },
+  'stack-wars': {
+    emoji:       '🧱',
+    accentColor: '#FF2D78',
+    dimColor:    '#FF2D7822',
+    label:       'Competitive Tetris — send garbage to rivals',
+    tagBg:       'linear-gradient(135deg, #FF2D78, #CC00AA)',
+    live:        true,
   },
   'neon-invaders': {
-    emoji:      '👾',
+    emoji:       '👾',
     accentColor: '#CC2200',
     dimColor:    '#CC220022',
     label:       'Tap before they reach you',
     tagBg:       'linear-gradient(135deg, #FF3B1A, #CC2200)',
+    live:        false,
   },
   'laser-tug': {
-    emoji:      '⚡',
+    emoji:       '⚡',
     accentColor: '#C9922A',
     dimColor:    '#C9922A22',
     label:       'Push the laser to win',
     tagBg:       'linear-gradient(135deg, #F0C040, #8B6914)',
+    live:        false,
   },
 }
 
 export default function GameCard({ game, topScore }) {
-  const { setActiveGame, setActiveTab } = useStore()
+  const { setActiveGame } = useStore()
   const meta = GAME_META[game.slug] || {
     emoji: '🎮', accentColor: '#C9922A', dimColor: '#C9922A22',
-    label: '', tagBg: 'linear-gradient(135deg, #F0C040, #C9922A)',
+    label: '', tagBg: 'linear-gradient(135deg, #F0C040, #C9922A)', live: false,
   }
 
+  const isComingSoon = !meta.live && game.slug !== 'stack-wars'
+
   function handlePlay() {
+    if (isComingSoon) return
     setActiveGame(game)
-    alert(`🎮 ${game.name}\n\nGame engine plugs in here.\nLeaderboard + scoring are fully wired.`)
   }
 
   return (
@@ -43,6 +56,7 @@ export default function GameCard({ game, topScore }) {
         background: 'linear-gradient(145deg, #2A2518, #1A1712)',
         border: `1px solid ${meta.accentColor}33`,
         boxShadow: `0 4px 20px #00000055, 0 0 30px ${meta.accentColor}11`,
+        opacity: isComingSoon ? 0.6 : 1,
       }}
     >
       {/* Top accent line */}
@@ -80,7 +94,7 @@ export default function GameCard({ game, topScore }) {
             </div>
           ) : (
             <p className="text-[10px] text-muted font-body mt-1 italic">
-              No scores yet — be first!
+              {isComingSoon ? 'Coming soon…' : 'No scores yet — be first!'}
             </p>
           )}
         </div>
@@ -88,16 +102,19 @@ export default function GameCard({ game, topScore }) {
         {/* Play button */}
         <button
           onClick={handlePlay}
-          className="flex-shrink-0 w-[60px] h-[60px] rounded-xl btn-press font-display
+          disabled={isComingSoon}
+          className="flex-shrink-0 w-[60px] h-[60px] rounded-xl font-display
             text-sm tracking-wider"
           style={{
-            background: meta.tagBg,
-            color: '#0B0A07',
-            boxShadow: `0 4px 12px ${meta.accentColor}55, inset 0 1px 0 #FFFFFF22`,
+            background: isComingSoon ? '#2A2518' : meta.tagBg,
+            color: isComingSoon ? '#7A6A50' : '#0B0A07',
+            border: isComingSoon ? '1px solid #3A3220' : 'none',
+            boxShadow: isComingSoon ? 'none' : `0 4px 12px ${meta.accentColor}55, inset 0 1px 0 #FFFFFF22`,
             fontSize: '13px',
+            cursor: isComingSoon ? 'default' : 'pointer',
           }}
         >
-          PLAY
+          {isComingSoon ? 'SOON' : 'PLAY'}
         </button>
       </div>
     </div>
